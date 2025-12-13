@@ -1,24 +1,3 @@
-// require('dotenv').config();
-// const express = require('express');
-// const mongoose = require('mongoose');
-
-// const app = express();
-// const port = process.env.PORT || 3000;
-// const uri = process.env.MONGO_URI;
-
-// // MongoDB connect
-// mongoose.connect(uri)
-//     .then(() => console.log('MongoDB connected'))
-//     .catch(err => console.error('MongoDB connection error:', err));
-
-    
-// app.get('/', (req, res) => {
-//     res.send('Hello From Garments Server!');
-// });
-
-// app.listen(port, () => {
-//     console.log(`Server running on port ${port}`);
-// });
 
 require('dotenv').config();
 const express = require('express');
@@ -41,8 +20,14 @@ mongoose.connect(uri)
     .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-const productsRouter = require('./routes/products');
-app.use('/products', productsRouter);
+const productsRouter = require('./routes/products'); //only 6 data
+const productDetailsRouter = require('./routes/productDetails');   // Single product details 
+
+app.use('/products', productsRouter);           // /products → list of 6
+app.use('/product', productDetailsRouter);      // /product/:id → single product
+
+
+
 
 app.get('/', (req, res) => {
     res.send('Hello From Garments Server!');
