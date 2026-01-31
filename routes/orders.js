@@ -27,6 +27,45 @@ router.post('/', async (req, res) => {
     try {
         const order = req.body;
 
+        //-----
+        const User = require('../models/User'); // ⬅️ top এ আনো
+
+        router.post('/', async (req, res) => {
+            try {
+                const order = req.body;
+
+                if (!order.productId || !order.email) {
+                    return res.status(400).json({ message: "Product ID and email are required" });
+                }
+
+                // 🔐 CHECK USER STATUS (MAIN FIX)
+                const user = await User.findOne({ email: order.email });
+
+                if (!user) {
+                    return res.status(404).json({ message: "User not found" });
+                }
+
+                if (user.status === "suspended") {
+                    return res.status(403).json({
+                        message: "You are suspended",
+                        reason: user.suspendReason,
+                        feedback: user.suspendFeedback
+                    });
+                }
+
+                const newOrder = new Order(order);
+                await newOrder.save();
+
+                res.status(201).json({ message: "Order created", id: newOrder._id });
+
+            } catch (err) {
+                console.error(err);
+                res.status(500).json({ message: "Internal server error" });
+            }
+        });
+
+        //--------------
+
         if (!order.productId || !order.email) {
             return res.status(400).json({ message: "Product ID and email are required" });
         }
