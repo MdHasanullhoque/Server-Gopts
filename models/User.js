@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     status: { type: String, enum: ["approved", "suspended", "pending"], default: "pending" },
     photoURL: { type: String },
 
-    // ✅ ADD THESE 2 LINES
+    //  ADD THESE 2 LINES
     suspendReason: { type: String, default: "" },
     suspendFeedback: { type: String, default: "" }
 
