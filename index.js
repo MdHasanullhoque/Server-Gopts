@@ -132,4 +132,3 @@ app.use("/admin-products", adminProductsRoute);
 app.get('/', (req, res) => res.send('Hello From Garments Server!'));
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
-j
