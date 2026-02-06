@@ -1,24 +1,98 @@
+// const express = require("express");
+// const router = express.Router();
+// const mongoose = require("mongoose");
+// const { ObjectId } = require("mongodb");
+// const User = require("../models/User");
+
+// // Middleware: check admin
+// const verifyAdmin = async (req, res, next) => {
+//   try {
+//     const email = req.headers["x-email"]; // frontend থেকে পাঠানো
+//     if (!email) return res.status(401).json({ message: "Unauthorized" });
+
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(401).json({ message: "User not found" });
+
+//     if (user.role !== "admin")
+//       return res.status(403).json({ message: "Admin only access" });
+
+//     next();
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+// // GET all products – only admin
+// router.get("/all", verifyAdmin, async (req, res) => {
+//   try {
+//     const products = await mongoose.connection.db
+//       .collection("products")
+//       .find({})
+//       .toArray();
+//     res.json(products);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json([]);
+//   }
+// });
+
+// // DELETE product – only admin
+// router.delete("/:id", verifyAdmin, async (req, res) => {
+//   try {
+//     await mongoose.connection.db
+//       .collection("products")
+//       .deleteOne({ _id: new ObjectId(req.params.id) });
+//     res.json({ message: "Product deleted" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+// module.exports = router;
+
+
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const { ObjectId } = require("mongodb");
+const User = require("../models/User");
 
-// GET all products (Admin)
-router.get("/all", async (req, res) => {
+// Middleware: admin verification
+const verifyAdmin = async (req, res, next) => {
+  try {
+    const email = req.headers["x-email"];
+    if (!email) return res.status(401).json({ message: "Unauthorized" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: "User not found" });
+    if (user.role !== "admin")
+      return res.status(403).json({ message: "Admin only access" });
+
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET all products
+router.get("/all", verifyAdmin, async (req, res) => {
   try {
     const products = await mongoose.connection.db
       .collection("products")
       .find({})
       .toArray();
-    res.json(products); // always array
+    res.json(products);
   } catch (err) {
     console.error(err);
-    res.status(500).json([]); // return empty array on error
+    res.status(500).json([]);
   }
 });
 
-// DELETE a product
-router.delete("/:id", async (req, res) => {
+// DELETE product
+router.delete("/:id", verifyAdmin, async (req, res) => {
   try {
     await mongoose.connection.db
       .collection("products")
@@ -30,18 +104,33 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// Toggle show on home
-router.patch("/home/:id", async (req, res) => {
+// PATCH showOnHome
+router.patch("/home/:id", verifyAdmin, async (req, res) => {
   try {
     const { showOnHome } = req.body;
     await mongoose.connection.db.collection("products").updateOne(
       { _id: new ObjectId(req.params.id) },
       { $set: { showOnHome } }
     );
-    res.json({ message: "Updated showOnHome" });
+    res.json({ message: "Home visibility updated" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Failed to update home visibility" });
+  }
+});
+
+// PATCH hide product
+router.patch("/hide/:id", verifyAdmin, async (req, res) => {
+  try {
+    const { isHidden } = req.body;
+    await mongoose.connection.db.collection("products").updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: { isHidden } }
+    );
+    res.json({ message: "Product visibility updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update product visibility" });
   }
 });
 
