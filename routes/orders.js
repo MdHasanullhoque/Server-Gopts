@@ -87,18 +87,45 @@ router.get("/my-orders", async (req, res) => {
 //     }
 // });
 
+// router.get("/", async (req, res) => {
+//     try {
+//         const email = req.headers["x-email"];
+//         if (!email) return res.status(401).json({ message: "Unauthorized" });
+
+//         const user = await User.findOne({ email });
+//         if (!user || user.role !== "admin")
+//             return res.status(403).json({ message: "Admin only access" });
+
+//         const status = req.query.status; // 👈 pending / approved / rejected
+
+//         const query = status ? { status } : {};
+
+//         const orders = await Order.find(query).sort({ createdAt: -1 });
+//         res.json(orders);
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: "Server error" });
+//     }
+// });
+
+
 router.get("/", async (req, res) => {
     try {
         const email = req.headers["x-email"];
+        const status = req.query.status;
+
         if (!email) return res.status(401).json({ message: "Unauthorized" });
 
         const user = await User.findOne({ email });
         if (!user || user.role !== "admin")
             return res.status(403).json({ message: "Admin only access" });
 
-        const status = req.query.status; // 👈 pending / approved / rejected
+        let query = {};
 
-        const query = status ? { status } : {};
+        if (status) {
+            query.status = { $regex: new RegExp(`^${status}$`, "i") };
+            // 👆 Pending / pending / PENDING সব ধরবে
+        }
 
         const orders = await Order.find(query).sort({ createdAt: -1 });
         res.json(orders);

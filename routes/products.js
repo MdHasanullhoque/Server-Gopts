@@ -36,4 +36,63 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+
+
+// ADD PRODUCT (Manager)
+router.post('/add', async (req, res) => {
+    try {
+        const {
+            title,
+            description,
+            category,
+            price,
+            availableQuantity,
+            moq,
+            images,
+            demoVideo,
+            paymentOption,
+            showOnHome,
+            email
+        } = req.body;
+
+        // basic validation
+        if (!title || !price || !category || !availableQuantity || !moq) {
+            return res.status(400).json({ message: "Required fields missing" });
+        }
+
+        // check manager
+        const user = await mongoose.connection.db
+            .collection('users')
+            .findOne({ email });
+
+        if (!user || user.role !== "manager") {
+            return res.status(403).json({ message: "Manager only access" });
+        }
+
+        const product = {
+            title,
+            description,
+            category,
+            price: Number(price),
+            availableQuantity: Number(availableQuantity),
+            moq: Number(moq),
+            images: images || [],
+            demoVideo: demoVideo || "",
+            paymentOption,
+            showOnHome: showOnHome || false,
+            createdBy: email,
+            createdAt: new Date()
+        };
+
+        await mongoose.connection.db
+            .collection('products')
+            .insertOne(product);
+
+        res.status(201).json({ message: "Product added successfully" });
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
