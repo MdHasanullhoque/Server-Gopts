@@ -1,6 +1,4 @@
 
-
-
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
@@ -24,9 +22,18 @@ const uri = process.env.MONGO_URI;
 //     credentials: true,
 // };
 
+// const corsOptions = {
+//     origin: ["http://localhost:5173", "http://localhost:5174"],
+//     credentials: true
+// };
+
+// ================= CORS =================
 const corsOptions = {
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    credentials: true
+    origin: [
+        "http://localhost:5173",           // local frontend
+        "https://your-frontend.vercel.app" // deployed frontend
+    ],
+    credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -39,9 +46,36 @@ mongoose.connect(uri)
 
 // Routes
 app.use("/users", usersRouter);
+
+// app.use("/products", productsRouter);
+// app.use("/products", productDetailsRouter);
 app.use("/products", productsRouter);
-app.use("/products", productDetailsRouter);
+app.use("/product-details", productDetailsRouter); // new path
+
 app.use("/orders", ordersRouter);
+
+
+
+
+// Get all products
+app.get("/products", async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.send(products);
+    } catch (error) {
+        res.status(500).send({ error: "Failed to fetch products" });
+    }
+});
+
+// Get single product
+app.get("/products/:id", async (req, res) => {
+    const product = await Product.findById(req.params.id);
+    res.send(product);
+});
+
+
+
+
 
 // Step 8: Admin products
 app.use("/admin-products", adminProductsRoute);

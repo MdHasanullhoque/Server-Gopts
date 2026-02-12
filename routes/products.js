@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -18,6 +16,7 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 // GET product by ID
 router.get('/:id', async (req, res) => {
@@ -47,16 +46,13 @@ router.post('/add', async (req, res) => {
             category,
             price,
             availableQuantity,
-            moq,
             images,
-            demoVideo,
-            paymentOption,
             showOnHome,
             email
         } = req.body;
 
         // basic validation
-        if (!title || !price || !category || !availableQuantity || !moq) {
+        if (!title || !price || !category || !availableQuantity ) {
             return res.status(400).json({ message: "Required fields missing" });
         }
 
@@ -96,3 +92,4 @@ router.post('/add', async (req, res) => {
 });
 
 module.exports = router;
+
