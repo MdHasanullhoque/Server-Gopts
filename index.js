@@ -16,7 +16,8 @@ const corsOptions = {
     origin: [
         "http://localhost:5173",
         "http://localhost:5174",
-        "https://client-gopts.vercel.app"
+        "https://client-gopts.vercel.app",
+        "https://goptsbd.netlify.app"
     ],
     credentials: true,
 };
