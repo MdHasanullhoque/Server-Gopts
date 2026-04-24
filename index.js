@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const User = require("./models/User");
 const productsRouter = require('./routes/products');
 const productDetailsRouter = require('./routes/productDetails');
 const usersRouter = require("./routes/users");
@@ -11,7 +10,6 @@ const ordersRouter = require('./routes/orders');
 const adminProductsRoute = require("./routes/adminProducts");
 
 const app = express();
-const port = process.env.PORT || 3000;
 const uri = process.env.MONGO_URI;
 
 const corsOptions = {
@@ -26,9 +24,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-mongoose.connect(uri)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
+// MongoDB connect with caching for serverless
+let isConnected = false;
+const connectDB = async () => {
+    if (isConnected) return;
+    await mongoose.connect(uri);
+    isConnected = true;
+    console.log('MongoDB connected');
+};
+
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 app.use("/users", usersRouter);
 app.use("/products", productsRouter);
@@ -38,4 +46,4 @@ app.use("/admin-products", adminProductsRoute);
 
 app.get('/', (req, res) => res.send('Hello From Garments Server!'));
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+module.exports = app;
