@@ -230,4 +230,23 @@ router.get("/track/:id", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+
+/* ===== CANCEL ORDER (Buyer) ===== */
+router.delete("/:id", async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: "Order not found" });
+        if (order.status !== "Pending")
+            return res.status(400).json({ message: "Only pending orders can be cancelled" });
+        await Order.findByIdAndDelete(req.params.id);
+        res.json({ message: "Order cancelled" });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+
+
+
+
 module.exports = router;
