@@ -148,7 +148,7 @@ router.patch("/:id/status", async (req, res) => {
         if (!email) return res.status(401).json({ message: "Unauthorized" });
 
         const adminUser = await User.findOne({ email });
-        if (!adminUser || adminUser.role !== "admin")
+        if (!adminUser || (adminUser.role !== "admin" && adminUser.role !== "manager"))
             return res.status(403).json({ message: "Admin only" });
 
         const updatedOrder = await Order.findByIdAndUpdate(
@@ -166,6 +166,58 @@ router.patch("/:id/status", async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
+/* ===== PENDING ORDERS (Manager) ===== */
+router.get("/pending", async (req, res) => {
+    try {
+        const email = req.headers["x-email"];
+        if (!email) return res.status(401).json({ message: "Unauthorized" });
 
+        const user = await User.findOne({ email });
+        if (!user || user.role !== "manager")
+            return res.status(403).json({ message: "Manager only access" });
+
+        const orders = await Order.find({ status: { $regex: /^pending$/i } }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+/* ===== APPROVED ORDERS (Manager) ===== */
+router.get("/approved", async (req, res) => {
+    try {
+        const email = req.headers["x-email"];
+        if (!email) return res.status(401).json({ message: "Unauthorized" });
+
+        const user = await User.findOne({ email });
+        if (!user || user.role !== "manager")
+            return res.status(403).json({ message: "Manager only access" });
+
+        const orders = await Order.find({ status: { $regex: /^approved$/i } }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+/* ===== REJECTED ORDERS (Manager) ===== */
+router.get("/rejected", async (req, res) => {
+    try {
+        const email = req.headers["x-email"];
+        if (!email) return res.status(401).json({ message: "Unauthorized" });
+
+        const user = await User.findOne({ email });
+        if (!user || user.role !== "manager")
+            return res.status(403).json({ message: "Manager only access" });
+
+        const orders = await Order.find({ status: { $regex: /^rejected$/i } }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 
 module.exports = router;

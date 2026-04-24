@@ -23,5 +23,8 @@
     "url": "https://github.com/MdHasanullhoque/Server-Gopts/issues"
   },
   "homepage": "https://github.com/MdHasanullhoque/Server-Gopts#readme",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

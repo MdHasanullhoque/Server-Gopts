@@ -37,7 +37,7 @@ router.get("/", verifyAdmin, async (req, res) => {
 });
 
 // ================= GET user by UID / email =================
-router.get("/uid/:uid", verifyAdmin, async (req, res) => {
+router.get("/uid/:uid", async (req, res) => {
     try {
         const { uid } = req.params;
         const { email } = req.query;
@@ -65,4 +65,28 @@ router.patch("/:id", verifyAdmin, async (req, res) => {
     }
 });
 
+// ================= Sync user (Login/Register) =================
+router.post("/sync", async (req, res) => {
+    try {
+        const { uid, name, email, photoURL, role } = req.body;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = await User.create({
+                uid,
+                name,
+                email,
+                photoURL,
+                role: role || "buyer",
+                status: "approved"  // "active" → "approved"
+            });
+        }
+
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error" });
+    }
+});
 module.exports = router;
